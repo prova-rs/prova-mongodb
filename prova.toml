@@ -1,0 +1,7 @@
+# Self-test manifest: resolve this plugin from its own directory (via prova-plugin.toml) and run
+# tests/. A consumer would instead declare `mongodb = "prova-rs/prova-mongodb@v1"`.
+[run]
+paths = ["tests"]
+
+[plugins]
+mongodb = { path = "." }

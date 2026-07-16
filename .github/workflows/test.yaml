@@ -1,0 +1,21 @@
+name: Test
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  test:
+    name: Lint & self-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Installs a released prova, puts it on PATH, and runs the suite in prova.toml. The self-test
+      # provisions containers via Docker (available on GitHub-hosted Ubuntu runners).
+      - name: Run the plugin's self-test
+        uses: prova-rs/run-action@v1
+
+      # prova is now on PATH — check the plugin conforms to the namespacing grammar.
+      - name: Lint the plugin
+        run: prova plugin lint *.lua
