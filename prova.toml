@@ -1,7 +1,20 @@
-# Self-test manifest: resolve this plugin from its own directory (via prova-plugin.toml) and run
-# tests/. A consumer would instead declare `mongodb = "prova-rs/prova-mongodb@v1"`.
-[run]
-paths = ["tests"]
+# One manifest, two hats. This package both exports a namespace (a plugin — `[plugin]`) and runs
+# its own proofs (a suite). A consumer instead pins it by source — a released tag:
+#   mongodb = { git = "https://github.com/prova-rs/prova-mongodb", tag = "v1.0" }
+[plugin]
+name        = "mongodb"
+entry       = "mongodb.lua"
+description = "MongoDB — docker-exec over the mongosh CLI, zero native code"
+license     = "MIT"
 
+# The range of prova versions this plugin is built against; a consumer is checked against it.
+[requires]
+prova = ">=0.3"
+
+[run]
+proofs = ["tests"]
+
+# Resolve THIS plugin from its own directory, so the self-tests can `require("mongodb")` exactly
+# as a consumer would.
 [plugins]
 mongodb = { path = "." }

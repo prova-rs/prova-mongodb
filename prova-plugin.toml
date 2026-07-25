@@ -1,8 +1,0 @@
-[plugin]
-name        = "mongodb"
-entry       = "mongodb.lua"
-description = "MongoDB — docker-exec over the mongosh CLI, zero native code"
-license     = "MIT"
-
-[requires]
-prova = ">=0.2, <0.3"

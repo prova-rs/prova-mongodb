@@ -82,27 +82,27 @@ local function make_client(container, conn)
   -- Insert one document; returns its `_id` (parsed from EJSON, so an ObjectId reads as
   -- `{ ["$oid"] = "..." }` and an explicit scalar `_id` reads as that scalar).
   function client:insert_one(coll, doc)
-    return prova.parse.json(sh(string.format(
+    return json.decode(sh(string.format(
       "EJSON.stringify(db.getCollection(%s).insertOne(%s).insertedId)",
       encode(coll), encode(doc))))
   end
 
   -- Insert many documents; returns the list of inserted `_id`s in order.
   function client:insert_many(coll, docs)
-    return prova.parse.json(sh(string.format(
+    return json.decode(sh(string.format(
       "EJSON.stringify(Object.values(db.getCollection(%s).insertMany(%s).insertedIds))",
       encode(coll), encode(docs))))
   end
 
   -- Find documents matching `query` (default all); returns a list of documents (parsed EJSON).
   function client:find(coll, query)
-    return prova.parse.json(sh(string.format(
+    return json.decode(sh(string.format(
       "EJSON.stringify(db.getCollection(%s).find(%s).toArray())", encode(coll), q(query))))
   end
 
   -- Find the first matching document, or nil.
   function client:find_one(coll, query)
-    return prova.parse.json(sh(string.format(
+    return json.decode(sh(string.format(
       "EJSON.stringify(db.getCollection(%s).findOne(%s))", encode(coll), q(query))))
   end
 
@@ -118,9 +118,13 @@ local function make_client(container, conn)
       "db.getCollection(%s).deleteMany(%s).deletedCount", encode(coll), q(query))))
   end
 
-  -- Drop a collection; returns true if it existed.
+  -- Drop a collection; returns true if it existed. mongosh's own `drop()` answers true even for
+  -- a collection that never existed, so existence is checked first to keep the documented
+  -- contract honest.
   function client:drop(coll)
-    return sh(string.format("db.getCollection(%s).drop()", encode(coll))) == "true"
+    return sh(string.format(
+      "db.getCollectionNames().includes(%s) ? db.getCollection(%s).drop() : false",
+      encode(coll), encode(coll))) == "true"
   end
 
   function client:close() end
