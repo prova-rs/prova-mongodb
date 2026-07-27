@@ -1,0 +1,30 @@
+# Instant registration: on every published release, dispatch the register verb on
+# prova-rs/package-registry so this plugin's entry (a projection of prova.toml's [plugin]
+# section) is upserted with `latest` = the released tag.
+#
+# Uses PROVA_DISPATCH_TOKEN — the org-wide secret prova's own release automation already
+# uses for cross-repo work. If the dispatch ever fails, the registry's reconcile loop
+# still picks the release up within 6 hours — registration is guaranteed either way,
+# this hop only buys latency.
+#
+# This only fires because release.yaml hands the release-creating action that same PAT. A release
+# published under GITHUB_TOKEN cannot trigger another workflow, so pointing that input back at the
+# default token disables this file without changing a line of it.
+name: register
+on:
+  release:
+    types: [published]
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch registration
+        env:
+          GH_TOKEN: ${{ secrets.PROVA_DISPATCH_TOKEN }}
+        run: |
+          # repository_dispatch: reachable with the token's Contents: write — no Actions scope needed.
+          gh api repos/prova-rs/package-registry/dispatches \
+            -f event_type=register \
+            -f 'client_payload[repo]=${{ github.repository }}' \
+            -f 'client_payload[ref]=${{ github.event.release.tag_name }}'
