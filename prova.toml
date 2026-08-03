@@ -16,5 +16,5 @@ proofs = ["tests"]
 
 # Resolve THIS package from its own directory, so the self-tests can `require("mongodb")` exactly
 # as a consumer would.
-[packages]
+[dependencies]
 mongodb = { path = "." }
